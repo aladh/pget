@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	url := "https://google.ca"
+	url := os.Args[1]
 
 	resp, err := http.Get(url)
 	if err != nil {
