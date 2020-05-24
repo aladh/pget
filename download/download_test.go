@@ -7,23 +7,45 @@ import (
 )
 
 func BenchmarkDownload(b *testing.B) {
-	b.Run("1GB", func(b *testing.B) {
-		b.Run("50 chunks", func(b *testing.B) {
+	b.Run("thinkbroadband 1GB", func(b *testing.B) {
+		b.Run("10 chunks", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				err := Run("http://ipv4.download.thinkbroadband.com/1GB.zip", 50, false)
-				if err != nil {
-					b.Fatalf("error downloading file: %s", err)
-				}
+				downloadChunked(b, "http://ipv4.download.thinkbroadband.com/1GB.zip", 10)
+			}
+		})
 
-				b.StopTimer()
+		b.Run("20 chunks", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				downloadChunked(b, "http://ipv4.download.thinkbroadband.com/1GB.zip", 20)
+			}
+		})
 
-				err = os.Remove("1GB.zip")
-				if err != nil {
-					log.Printf("error removing file: %s\n", err)
-				}
+		b.Run("40 chunks", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				downloadChunked(b, "http://ipv4.download.thinkbroadband.com/1GB.zip", 40)
+			}
+		})
 
-				b.StartTimer()
+		b.Run("80 chunks", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				downloadChunked(b, "http://ipv4.download.thinkbroadband.com/1GB.zip", 80)
 			}
 		})
 	})
+}
+
+func downloadChunked(b *testing.B, url string, numChunks int) {
+	err := Run(url, numChunks, false)
+	if err != nil {
+		b.Fatalf("error downloading file: %s", err)
+	}
+
+	b.StopTimer()
+
+	err = os.Remove(filename(url))
+	if err != nil {
+		log.Printf("error removing file: %s\n", err)
+	}
+
+	b.StartTimer()
 }
