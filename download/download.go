@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 )
 
 func Run(url string) error {
@@ -30,16 +31,27 @@ func Run(url string) error {
 	if err != nil {
 		return fmt.Errorf("error creating file: %w", err)
 	}
-	defer out.Close()
+	err = out.Close()
+	if err != nil {
+		return fmt.Errorf("error closing file: %w", err)
+	}
 
-	numParts := 2
+	numParts := 20
+	wg := sync.WaitGroup{}
 
 	for i, chunk := range chunks.Build(url, contentLength, numParts, out) {
-		err := chunk.Download()
-		if err != nil {
-			return fmt.Errorf("error downloading chunk %d: %w", i, err)
-		}
+		wg.Add(1)
+		go func(index int, chunk chunks.Chunk) {
+			defer wg.Done()
+
+			err := chunk.Download()
+			if err != nil {
+				log.Printf("error downloading chunk %d: %s\n", index, err)
+			}
+		}(i, chunk)
 	}
+
+	wg.Wait()
 
 	return nil
 }

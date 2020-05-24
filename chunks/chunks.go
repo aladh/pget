@@ -27,11 +27,16 @@ func Build(url string, contentLength int64, numChunks int, out *os.File) []Chunk
 			break
 		}
 
+		file, err := os.OpenFile(out.Name(), os.O_RDWR, 0666)
+		if err != nil {
+			log.Println("error opening file")
+		}
+
 		chunks = append(chunks, Chunk{
 			url:   url,
 			start: position,
 			end:   position + chunkSize,
-			out:   out,
+			out:   file,
 		})
 
 		position += chunkSize
@@ -63,6 +68,11 @@ func (chunk *Chunk) Download() error {
 	_, err = io.Copy(chunk.out, res.Body)
 	if err != nil {
 		return fmt.Errorf("error writing file: %w", err)
+	}
+
+	err = chunk.out.Close()
+	if err != nil {
+		return fmt.Errorf("error closing file: %w", err)
 	}
 
 	log.Printf("Downloaded chunk (%d-%d)\n", chunk.start, chunk.end)
