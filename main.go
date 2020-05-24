@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	numChunks := flag.Int("chunks", 8, "number of chunks to download in parallel")
+	numChunks := flag.Int("c", 8, "number of chunks to download in parallel")
 	verbose := flag.Bool("v", false, "verbose")
 	flag.Parse()
 

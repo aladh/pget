@@ -15,7 +15,7 @@ func TestParallelDownload(t *testing.T) {
 	expectedHash := "b3215c06647bc550406a9c8ccc378756"
 
 	oldArgs := os.Args
-	os.Args = []string{"pget", "-chunks", "10", "http://ipv4.download.thinkbroadband.com/5MB.zip"}
+	os.Args = []string{"pget", "-c", "10", "http://ipv4.download.thinkbroadband.com/5MB.zip"}
 	defer func() { os.Args = oldArgs }()
 
 	main()
