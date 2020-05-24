@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 )
 
 func Run(url string, numChunks int) error {
@@ -27,6 +28,8 @@ func Run(url string, numChunks int) error {
 	filename := filename(url)
 
 	log.Printf("Downloading %s (%d bytes) in %d chunks\n", filename, contentLength, numChunks)
+
+	startTime := time.Now()
 
 	out, err := os.Create(filename)
 	if err != nil {
@@ -54,6 +57,10 @@ func Run(url string, numChunks int) error {
 	}
 
 	wg.Wait()
+
+	duration := time.Now().Sub(startTime).Seconds()
+
+	log.Printf("Finished in %f seconds. Average speed: %f MB/s\n", duration, float64(contentLength/1000000)/duration)
 
 	return nil
 }
