@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -26,11 +27,11 @@ func Run(url string) error {
 
 	log.Printf("Downloading %s (size %d)\n", filename, contentLength)
 
-	res, err = http.Get(url)
+	part, err := downloadRange(url, 0, contentLength)
 	if err != nil {
-		return fmt.Errorf("error making request: %w", err)
+		return fmt.Errorf("error downloading part: %w", err)
 	}
-	defer res.Body.Close()
+	defer os.Remove(part.Name())
 
 	out, err := os.Create(filename)
 	if err != nil {
@@ -38,7 +39,7 @@ func Run(url string) error {
 	}
 	defer out.Close()
 
-	written, err := io.Copy(out, res.Body)
+	written, err := io.Copy(out, part)
 	if err != nil {
 		return fmt.Errorf("eror writing file: %w", err)
 	}
@@ -46,6 +47,40 @@ func Run(url string) error {
 	log.Printf("Wrote %d bytes\n", written)
 
 	return nil
+}
+
+func downloadRange(url string, start int64, end int64) (*os.File, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %w", err)
+	}
+
+	req.Header.Add("Range", fmt.Sprintf("%d-%d", start, end))
+
+	client := http.Client{}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error performing request: %w", err)
+	}
+	defer res.Body.Close()
+
+	out, err := ioutil.TempFile(os.TempDir(), "pget-")
+	if err != nil {
+		return nil, fmt.Errorf("error creating tempfile: %w", err)
+	}
+
+	_, err = io.Copy(out, res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error writing file: %w", err)
+	}
+
+	_, err = out.Seek(0, io.SeekStart)
+	if err != nil {
+		return nil, fmt.Errorf("error seeking to start of file: %w", err)
+	}
+
+	return out, nil
 }
 
 func supportsRangeRequests(res *http.Response) bool {
