@@ -11,7 +11,7 @@ import (
 	"sync"
 )
 
-func Run(url string) error {
+func Run(url string, numChunks int) error {
 	res, err := http.Head(url)
 	if err != nil {
 		return fmt.Errorf("error making HEAD request: %w", err)
@@ -25,7 +25,7 @@ func Run(url string) error {
 
 	filename := filename(url)
 
-	log.Printf("Downloading %s (size %d)\n", filename, contentLength)
+	log.Printf("Downloading %s (size %d) in %d chunks\n", filename, contentLength, numChunks)
 
 	out, err := os.Create(filename)
 	if err != nil {
@@ -36,10 +36,9 @@ func Run(url string) error {
 		return fmt.Errorf("error closing file: %w", err)
 	}
 
-	numParts := 20
 	wg := sync.WaitGroup{}
 
-	for i, chunk := range chunks.Build(url, contentLength, numParts, out) {
+	for i, chunk := range chunks.Build(url, contentLength, numChunks, out) {
 		wg.Add(1)
 		go func(index int, chunk chunks.Chunk) {
 			defer wg.Done()
