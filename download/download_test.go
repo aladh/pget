@@ -8,33 +8,35 @@ import (
 
 func BenchmarkDownload(b *testing.B) {
 	b.Run("thinkbroadband 1GB", func(b *testing.B) {
+		url := "http://ipv4.download.thinkbroadband.com/1GB.zip"
+
 		b.Run("1 chunk", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				downloadChunked(b, "http://ipv4.download.thinkbroadband.com/1GB.zip", 1)
+				downloadChunked(b, url, 1)
 			}
 		})
 
 		b.Run("10 chunks", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				downloadChunked(b, "http://ipv4.download.thinkbroadband.com/1GB.zip", 10)
+				downloadChunked(b, url, 10)
 			}
 		})
 
 		b.Run("20 chunks", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				downloadChunked(b, "http://ipv4.download.thinkbroadband.com/1GB.zip", 20)
+				downloadChunked(b, url, 20)
 			}
 		})
 
 		b.Run("40 chunks", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				downloadChunked(b, "http://ipv4.download.thinkbroadband.com/1GB.zip", 40)
+				downloadChunked(b, url, 40)
 			}
 		})
 
 		b.Run("80 chunks", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				downloadChunked(b, "http://ipv4.download.thinkbroadband.com/1GB.zip", 80)
+				downloadChunked(b, url, 80)
 			}
 		})
 	})
