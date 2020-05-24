@@ -10,6 +10,9 @@ import (
 
 func main() {
 	url := os.Args[1]
+	filename := filename(url)
+
+	log.Printf("Downloading %s\n", filename)
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -17,7 +20,7 @@ func main() {
 	}
 	defer resp.Body.Close()
 
-	out, err := os.Create(filename(url))
+	out, err := os.Create(filename)
 	if err != nil {
 		panic(err)
 	}
