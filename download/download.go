@@ -55,7 +55,7 @@ func downloadRange(url string, start int64, end int64) (*os.File, error) {
 		return nil, fmt.Errorf("error creating request: %w", err)
 	}
 
-	req.Header.Add("Range", fmt.Sprintf("%d-%d", start, end))
+	req.Header.Add("Range", fmt.Sprintf("bytes=%d-%d", start, end))
 
 	client := http.Client{}
 
