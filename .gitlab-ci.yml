@@ -17,4 +17,4 @@ benchmark:
   stage: test
   image: golang:1.14-buster
   script:
-    - go test ./... -run=Bench -bench=. -benchtime=10x
+    - go test ./... -run=Bench -bench=. -benchtime=10x -timeout 0
