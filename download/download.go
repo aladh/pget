@@ -27,24 +27,32 @@ func Run(url string) error {
 
 	log.Printf("Downloading %s (size %d)\n", filename, contentLength)
 
-	part, err := downloadRange(url, 0, contentLength)
-	if err != nil {
-		return fmt.Errorf("error downloading part: %w", err)
-	}
-	defer os.Remove(part.Name())
-
 	out, err := os.Create(filename)
 	if err != nil {
 		return fmt.Errorf("error creating file: %w", err)
 	}
 	defer out.Close()
 
-	written, err := io.Copy(out, part)
-	if err != nil {
-		return fmt.Errorf("eror writing file: %w", err)
-	}
+	numParts := 2
+	position := int64(0)
 
-	log.Printf("Wrote %d bytes\n", written)
+	for i := 0; i < numParts; i++ {
+		part, err := downloadRange(url, position, position+contentLength/2-1)
+		if err != nil {
+			return fmt.Errorf("error downloading part: %w", err)
+		}
+
+		written, err := io.Copy(out, part)
+		if err != nil {
+			return fmt.Errorf("eror writing file: %w", err)
+		}
+
+		os.Remove(part.Name())
+
+		position += contentLength / 2
+
+		log.Printf("Wrote %d bytes\n", written)
+	}
 
 	return nil
 }
@@ -70,10 +78,11 @@ func downloadRange(url string, start int64, end int64) (*os.File, error) {
 		return nil, fmt.Errorf("error creating tempfile: %w", err)
 	}
 
-	_, err = io.Copy(out, res.Body)
+	written, err := io.Copy(out, res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error writing file: %w", err)
 	}
+	log.Printf("Downloaded %d chunk\n", written)
 
 	_, err = out.Seek(0, io.SeekStart)
 	if err != nil {
