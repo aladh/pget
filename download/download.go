@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func Run(url string, numChunks int) error {
+func Run(url string, numChunks int, verbose bool) error {
 	res, err := http.Head(url)
 	if err != nil {
 		return fmt.Errorf("error making HEAD request: %w", err)
@@ -52,7 +52,9 @@ func Run(url string, numChunks int) error {
 				log.Printf("error downloading chunk %d: %s\n", index, err)
 			}
 
-			log.Printf("Downloaded chunk %d\n", index)
+			if verbose {
+				log.Printf("Downloaded chunk %d\n", index)
+			}
 		}(i, chunk)
 	}
 

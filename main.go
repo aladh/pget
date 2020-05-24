@@ -8,9 +8,10 @@ import (
 
 func main() {
 	numChunks := flag.Int("chunks", 8, "number of chunks to download in parallel")
+	verbose := flag.Bool("v", false, "verbose")
 	flag.Parse()
 
-	err := download.Run(flag.Arg(0), *numChunks)
+	err := download.Run(flag.Arg(0), *numChunks, *verbose)
 	if err != nil {
 		log.Fatalf("Download failed with error: %s", err)
 	}
