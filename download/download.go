@@ -16,6 +16,7 @@ func Run(url string, numChunks int) error {
 	if err != nil {
 		return fmt.Errorf("error making HEAD request: %w", err)
 	}
+	defer res.Body.Close()
 
 	if !supportsRangeRequests(res) {
 		return errors.New("server does not support range requests")
