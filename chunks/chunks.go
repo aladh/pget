@@ -52,6 +52,7 @@ func (chunk *Chunk) Download() error {
 	}
 
 	req.Header.Add("Range", fmt.Sprintf("bytes=%d-%d", chunk.start, chunk.end))
+	req.Close = true
 
 	client := http.Client{}
 	res, err := client.Do(req)
