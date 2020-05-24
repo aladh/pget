@@ -44,7 +44,7 @@ func Run(url string, numChunks int, verbose bool) error {
 
 	wg := sync.WaitGroup{}
 
-	for i, chunk := range chunks.Build(url, contentLength, numChunks, out) {
+	for i, chunk := range chunks.Build(url, contentLength, numChunks, out.Name()) {
 		wg.Add(1)
 		go func(index int, chunk chunks.Chunk) {
 			defer wg.Done()

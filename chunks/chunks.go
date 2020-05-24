@@ -3,19 +3,18 @@ package chunks
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 )
 
 type Chunk struct {
-	url   string
-	start int64
-	end   int64
-	out   *os.File
+	url      string
+	start    int64
+	end      int64
+	filename string
 }
 
-func Build(url string, contentLength int64, numChunks int, out *os.File) []Chunk {
+func Build(url string, contentLength int64, numChunks int, filename string) []Chunk {
 	chunkSize := contentLength / int64(numChunks)
 
 	position := int64(0)
@@ -27,16 +26,11 @@ func Build(url string, contentLength int64, numChunks int, out *os.File) []Chunk
 			break
 		}
 
-		file, err := os.OpenFile(out.Name(), os.O_RDWR, 0666)
-		if err != nil {
-			log.Println("error opening file")
-		}
-
 		chunks = append(chunks, Chunk{
-			url:   url,
-			start: position,
-			end:   position + chunkSize,
-			out:   file,
+			url:      url,
+			start:    position,
+			end:      position + chunkSize,
+			filename: filename,
 		})
 
 		position += chunkSize
@@ -48,7 +42,7 @@ func Build(url string, contentLength int64, numChunks int, out *os.File) []Chunk
 func (chunk *Chunk) Download() error {
 	req, err := http.NewRequest("GET", chunk.url, nil)
 	if err != nil {
-		return fmt.Errorf("error creating request: %w", err)
+		return fmt.Errorf("error creating range request: %w", err)
 	}
 
 	req.Header.Add("Range", fmt.Sprintf("bytes=%d-%d", chunk.start, chunk.end))
@@ -57,23 +51,24 @@ func (chunk *Chunk) Download() error {
 	client := http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("error performing request: %w", err)
+		return fmt.Errorf("error performing range request: %w", err)
 	}
 	defer res.Body.Close()
 
-	_, err = chunk.out.Seek(chunk.start, io.SeekStart)
+	file, err := os.OpenFile(chunk.filename, os.O_RDWR, 0666)
 	if err != nil {
-		return fmt.Errorf("error seeking to start of file: %w", err)
+		return fmt.Errorf("error opening file: %w", err)
+	}
+	defer file.Close()
+
+	_, err = file.Seek(chunk.start, io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("error seeking to start of chunk: %w", err)
 	}
 
-	_, err = io.Copy(chunk.out, res.Body)
+	_, err = io.Copy(file, res.Body)
 	if err != nil {
-		return fmt.Errorf("error writing file: %w", err)
-	}
-
-	err = chunk.out.Close()
-	if err != nil {
-		return fmt.Errorf("error closing file: %w", err)
+		return fmt.Errorf("error writing chunk: %w", err)
 	}
 
 	return nil
