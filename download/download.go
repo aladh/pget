@@ -26,7 +26,7 @@ func Run(url string, numChunks int) error {
 
 	filename := filename(url)
 
-	log.Printf("Downloading %s (size %d) in %d chunks\n", filename, contentLength, numChunks)
+	log.Printf("Downloading %s (%d bytes) in %d chunks\n", filename, contentLength, numChunks)
 
 	out, err := os.Create(filename)
 	if err != nil {
@@ -48,6 +48,8 @@ func Run(url string, numChunks int) error {
 			if err != nil {
 				log.Printf("error downloading chunk %d: %s\n", index, err)
 			}
+
+			log.Printf("Downloaded chunk %d\n", index)
 		}(i, chunk)
 	}
 

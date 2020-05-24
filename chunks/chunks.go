@@ -76,7 +76,5 @@ func (chunk *Chunk) Download() error {
 		return fmt.Errorf("error closing file: %w", err)
 	}
 
-	log.Printf("Downloaded chunk (%d-%d)\n", chunk.start, chunk.end)
-
 	return nil
 }
