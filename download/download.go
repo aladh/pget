@@ -58,7 +58,7 @@ func Run(url string, numChunks int) error {
 
 	wg.Wait()
 
-	duration := time.Now().Sub(startTime).Seconds()
+	duration := time.Since(startTime).Seconds()
 
 	log.Printf("Finished in %f seconds. Average speed: %f MB/s\n", duration, float64(contentLength/1000000)/duration)
 
