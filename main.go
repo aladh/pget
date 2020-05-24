@@ -1,40 +1,14 @@
 package main
 
 import (
-	"io"
+	"github.com/ali-l/pget/download"
 	"log"
-	"net/http"
 	"os"
-	"strings"
 )
 
 func main() {
-	url := os.Args[1]
-	filename := filename(url)
-
-	log.Printf("Downloading %s\n", filename)
-
-	resp, err := http.Get(url)
+	err := download.Run(os.Args[1])
 	if err != nil {
-		panic(err)
+		log.Fatalf("Download failed with error: %s", err)
 	}
-	defer resp.Body.Close()
-
-	out, err := os.Create(filename)
-	if err != nil {
-		panic(err)
-	}
-	defer out.Close()
-
-	written, err := io.Copy(out, resp.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	log.Printf("Wrote %d bytes\n", written)
-}
-
-func filename(url string) string {
-	segments := strings.Split(url, "/")
-	return segments[len(segments)-1]
 }
