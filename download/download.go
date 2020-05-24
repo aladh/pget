@@ -27,7 +27,9 @@ func Run(url string, numChunks int, verbose bool) error {
 
 	filename := filename(url)
 
-	log.Printf("Downloading %s (%d bytes) in %d chunks\n", filename, contentLength, numChunks)
+	if verbose {
+		log.Printf("Downloading %s (%d bytes) in %d chunks\n", filename, contentLength, numChunks)
+	}
 
 	startTime := time.Now()
 
@@ -62,7 +64,9 @@ func Run(url string, numChunks int, verbose bool) error {
 
 	duration := time.Since(startTime).Seconds()
 
-	log.Printf("Finished in %f seconds. Average speed: %f MB/s\n", duration, float64(contentLength/1000000)/duration)
+	if verbose {
+		log.Printf("Finished in %f seconds. Average speed: %f MB/s\n", duration, float64(contentLength/1000000)/duration)
+	}
 
 	return nil
 }
