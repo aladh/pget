@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -16,7 +17,7 @@ func main() {
 	}
 	defer resp.Body.Close()
 
-	out, err := os.Create("google.html")
+	out, err := os.Create(filename(url))
 	if err != nil {
 		panic(err)
 	}
@@ -28,4 +29,9 @@ func main() {
 	}
 
 	log.Printf("Wrote %d bytes\n", written)
+}
+
+func filename(url string) string {
+	segments := strings.Split(url, "/")
+	return segments[len(segments)-1]
 }
