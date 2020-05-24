@@ -1,5 +1,6 @@
 stages:
   - test
+  - benchmark
 
 lint:
   stage: test
@@ -14,7 +15,7 @@ end-to-end:
     - go test main*.go
 
 benchmark:
-  stage: test
+  stage: benchmark
   image: golang:1.14-buster
   script:
     - go test ./... -run=Bench -bench=. -benchtime=10x -timeout 0
