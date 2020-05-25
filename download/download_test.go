@@ -34,9 +34,9 @@ func BenchmarkDownload(b *testing.B) {
 			}
 		})
 
-		b.Run("80 chunks", func(b *testing.B) {
+		b.Run("60 chunks", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				downloadChunked(b, url, 80)
+				downloadChunked(b, url, 60)
 			}
 		})
 	})
