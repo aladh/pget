@@ -18,6 +18,7 @@ type Download struct {
 	numChunks int
 	filename  string
 	verbose   bool
+	waitGroup sync.WaitGroup
 }
 
 func New(url string, numChunks int, verbose bool) *Download {
@@ -26,6 +27,7 @@ func New(url string, numChunks int, verbose bool) *Download {
 		numChunks: numChunks,
 		filename:  filename(url),
 		verbose:   verbose,
+		waitGroup: sync.WaitGroup{},
 	}
 }
 
@@ -50,7 +52,8 @@ func (d *Download) Run() error {
 		return err
 	}
 
-	d.downloadChunks(meta.ContentLength)
+	d.spawnWorkers(meta.ContentLength)
+	d.waitGroup.Wait()
 
 	duration := time.Since(startTime).Seconds()
 
@@ -61,14 +64,12 @@ func (d *Download) Run() error {
 	return nil
 }
 
-func (d *Download) downloadChunks(contentLength int64) {
-	wg := sync.WaitGroup{}
-
+func (d *Download) spawnWorkers(contentLength int64) {
 	for i, chunk := range chunks.Build(d.url, contentLength, d.numChunks, d.filename) {
-		wg.Add(1)
+		d.waitGroup.Add(1)
 
 		go func(index int, chunk chunks.Chunk) {
-			defer wg.Done()
+			defer d.waitGroup.Done()
 
 			err := chunk.Download()
 			if err != nil {
@@ -80,8 +81,6 @@ func (d *Download) downloadChunks(contentLength int64) {
 			}
 		}(i, chunk)
 	}
-
-	wg.Wait()
 }
 
 func (d *Download) createFile() error {
