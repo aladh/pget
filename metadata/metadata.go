@@ -11,7 +11,7 @@ type Metadata struct {
 	SupportsRangeRequests bool
 }
 
-func New(url string) (*Metadata, error) {
+func Fetch(url string) (*Metadata, error) {
 	res, err := http.Head(url)
 	if err != nil {
 		return nil, fmt.Errorf("error making HEAD request: %w", err)

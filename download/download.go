@@ -16,9 +16,9 @@ import (
 func Run(url string, numChunks int, verbose bool) error {
 	startTime := time.Now()
 
-	meta, err := metadata.New(url)
+	meta, err := metadata.Fetch(url)
 	if err != nil {
-		return fmt.Errorf("error finding metadata: %w", err)
+		return fmt.Errorf("error fetching metadata: %w", err)
 	}
 
 	if !meta.SupportsRangeRequests {
