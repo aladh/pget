@@ -39,7 +39,7 @@ func Build(url string, contentLength int64, numChunks int, filename string) []Ch
 	return chunks
 }
 
-func (chunk *Chunk) Download() error {
+func (chunk *Chunk) Download() (err error) {
 	req, err := http.NewRequest("GET", chunk.url, nil)
 	if err != nil {
 		return fmt.Errorf("error creating range request: %w", err)
@@ -52,13 +52,23 @@ func (chunk *Chunk) Download() error {
 	if err != nil {
 		return fmt.Errorf("error performing range request: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() {
+		closeErr := res.Body.Close()
+		if closeErr != nil {
+			err = fmt.Errorf("error closing response body: %w", closeErr)
+		}
+	}()
 
 	file, err := os.OpenFile(chunk.filename, os.O_RDWR, 0666)
 	if err != nil {
 		return fmt.Errorf("error opening file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		closeErr := file.Close()
+		if closeErr != nil {
+			err = fmt.Errorf("error closing file: %w", closeErr)
+		}
+	}()
 
 	_, err = file.Seek(chunk.start, io.SeekStart)
 	if err != nil {
