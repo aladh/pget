@@ -77,7 +77,7 @@ func BenchmarkDownload(b *testing.B) {
 }
 
 func downloadChunked(b *testing.B, url string, numChunks int) {
-	err := Run(url, numChunks, false)
+	err := New(url, numChunks, false).Run()
 	if err != nil {
 		b.Fatalf("error downloading file: %s", err)
 	}

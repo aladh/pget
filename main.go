@@ -11,7 +11,7 @@ func main() {
 	verbose := flag.Bool("v", false, "verbose")
 	flag.Parse()
 
-	err := download.Run(flag.Arg(0), *numChunks, *verbose)
+	err := download.New(flag.Arg(0), *numChunks, *verbose).Run()
 	if err != nil {
 		log.Fatalf("Download failed with error: %s", err)
 	}

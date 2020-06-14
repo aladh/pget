@@ -13,10 +13,26 @@ import (
 	"github.com/ali-l/pget/metadata"
 )
 
-func Run(url string, numChunks int, verbose bool) error {
+type Download struct {
+	url       string
+	numChunks int
+	filename  string
+	verbose   bool
+}
+
+func New(url string, numChunks int, verbose bool) *Download {
+	return &Download{
+		url:       url,
+		numChunks: numChunks,
+		filename:  filename(url),
+		verbose:   verbose,
+	}
+}
+
+func (d *Download) Run() error {
 	startTime := time.Now()
 
-	meta, err := metadata.Fetch(url)
+	meta, err := metadata.Fetch(d.url)
 	if err != nil {
 		return fmt.Errorf("error fetching metadata: %w", err)
 	}
@@ -25,32 +41,30 @@ func Run(url string, numChunks int, verbose bool) error {
 		return errors.New("server does not support range requests")
 	}
 
-	filename := filename(url)
-
-	if verbose {
-		log.Printf("Downloading %s (%d bytes) in %d chunks\n", filename, meta.ContentLength, numChunks)
+	if d.verbose {
+		log.Printf("Downloading %s (%d bytes) in %d chunks\n", d.filename, meta.ContentLength, d.numChunks)
 	}
 
-	err = createFile(filename)
+	err = d.createFile()
 	if err != nil {
 		return err
 	}
 
-	downloadChunks(url, numChunks, verbose, meta.ContentLength, filename)
+	d.downloadChunks(meta.ContentLength)
 
 	duration := time.Since(startTime).Seconds()
 
-	if verbose {
+	if d.verbose {
 		log.Printf("Finished in %f seconds. Average speed: %f MB/s\n", duration, float64(meta.ContentLength/1000000)/duration)
 	}
 
 	return nil
 }
 
-func downloadChunks(url string, numChunks int, verbose bool, contentLength int64, filename string) {
+func (d *Download) downloadChunks(contentLength int64) {
 	wg := sync.WaitGroup{}
 
-	for i, chunk := range chunks.Build(url, contentLength, numChunks, filename) {
+	for i, chunk := range chunks.Build(d.url, contentLength, d.numChunks, d.filename) {
 		wg.Add(1)
 
 		go func(index int, chunk chunks.Chunk) {
@@ -61,7 +75,7 @@ func downloadChunks(url string, numChunks int, verbose bool, contentLength int64
 				log.Printf("error downloading chunk %d: %s\n", index, err)
 			}
 
-			if verbose {
+			if d.verbose {
 				log.Printf("Downloaded chunk %d\n", index)
 			}
 		}(i, chunk)
@@ -70,8 +84,8 @@ func downloadChunks(url string, numChunks int, verbose bool, contentLength int64
 	wg.Wait()
 }
 
-func createFile(filename string) error {
-	file, err := os.Create(filename)
+func (d *Download) createFile() error {
+	file, err := os.Create(d.filename)
 	if err != nil {
 		return fmt.Errorf("error creating file: %w", err)
 	}
