@@ -13,6 +13,8 @@ import (
 )
 
 func Run(url string, numChunks int, verbose bool) error {
+	startTime := time.Now()
+
 	res, err := http.Head(url)
 	if err != nil {
 		return fmt.Errorf("error making HEAD request: %w", err)
@@ -33,8 +35,6 @@ func Run(url string, numChunks int, verbose bool) error {
 	if verbose {
 		log.Printf("Downloading %s (%d bytes) in %d chunks\n", filename, contentLength, numChunks)
 	}
-
-	startTime := time.Now()
 
 	out, err := os.Create(filename)
 	if err != nil {
