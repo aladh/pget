@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -24,18 +25,20 @@ func Run(url string, numChunks int, verbose bool) error {
 		return errors.New("server does not support range requests")
 	}
 
+	filename := filename(url)
+
 	if verbose {
-		log.Printf("Downloading %s (%d bytes) in %d chunks\n", meta.Filename, meta.ContentLength, numChunks)
+		log.Printf("Downloading %s (%d bytes) in %d chunks\n", filename, meta.ContentLength, numChunks)
 	}
 
-	err = createFile(meta.Filename)
+	err = createFile(filename)
 	if err != nil {
 		return err
 	}
 
 	wg := sync.WaitGroup{}
 
-	for i, chunk := range chunks.Build(url, meta.ContentLength, numChunks, meta.Filename) {
+	for i, chunk := range chunks.Build(url, meta.ContentLength, numChunks, filename) {
 		wg.Add(1)
 		go func(index int, chunk chunks.Chunk) {
 			defer wg.Done()
@@ -74,4 +77,9 @@ func createFile(filename string) error {
 	}
 
 	return nil
+}
+
+func filename(url string) string {
+	segments := strings.Split(url, "/")
+	return segments[len(segments)-1]
 }
