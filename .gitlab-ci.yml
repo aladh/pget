@@ -1,6 +1,7 @@
 stages:
   - test
-  - benchmark
+  - build
+  - verify
 
 lint:
   stage: test
@@ -8,14 +9,19 @@ lint:
   script:
     - golangci-lint run -v -E golint -E gofmt -E goconst -E interfacer -E gocritic -E gocognit -E gocyclo
 
+binary:
+  stage: build
+  image: golang:1.14-buster
+  script: go build
+
 end-to-end:
-  stage: test
+  stage: verify
   image: golang:1.14-buster
   script:
     - go test main*.go
 
 benchmark:
-  stage: benchmark
+  stage: verify
   image: golang:1.14-buster
   script:
     - go test ./... -run=Bench -bench=. -benchtime=10x -timeout 0
