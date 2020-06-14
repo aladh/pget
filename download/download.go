@@ -36,10 +36,23 @@ func Run(url string, numChunks int, verbose bool) error {
 		return err
 	}
 
+	downloadChunks(url, numChunks, verbose, meta.ContentLength, filename)
+
+	duration := time.Since(startTime).Seconds()
+
+	if verbose {
+		log.Printf("Finished in %f seconds. Average speed: %f MB/s\n", duration, float64(meta.ContentLength/1000000)/duration)
+	}
+
+	return nil
+}
+
+func downloadChunks(url string, numChunks int, verbose bool, contentLength int64, filename string) {
 	wg := sync.WaitGroup{}
 
-	for i, chunk := range chunks.Build(url, meta.ContentLength, numChunks, filename) {
+	for i, chunk := range chunks.Build(url, contentLength, numChunks, filename) {
 		wg.Add(1)
+
 		go func(index int, chunk chunks.Chunk) {
 			defer wg.Done()
 
@@ -55,14 +68,6 @@ func Run(url string, numChunks int, verbose bool) error {
 	}
 
 	wg.Wait()
-
-	duration := time.Since(startTime).Seconds()
-
-	if verbose {
-		log.Printf("Finished in %f seconds. Average speed: %f MB/s\n", duration, float64(meta.ContentLength/1000000)/duration)
-	}
-
-	return nil
 }
 
 func createFile(filename string) error {
