@@ -17,7 +17,10 @@ func Run(url string, numChunks int, verbose bool) error {
 	if err != nil {
 		return fmt.Errorf("error making HEAD request: %w", err)
 	}
-	defer res.Body.Close()
+	err = res.Body.Close()
+	if err != nil {
+		return fmt.Errorf("error closing response body: %w", err)
+	}
 
 	if !supportsRangeRequests(res) {
 		return errors.New("server does not support range requests")
