@@ -3,47 +3,39 @@ package download
 import (
 	"errors"
 	"fmt"
-	"github.com/ali-l/pget/chunks"
 	"log"
-	"net/http"
 	"os"
-	"strings"
 	"sync"
 	"time"
+
+	"github.com/ali-l/pget/chunks"
+	"github.com/ali-l/pget/metadata"
 )
 
 func Run(url string, numChunks int, verbose bool) error {
 	startTime := time.Now()
 
-	res, err := http.Head(url)
+	meta, err := metadata.New(url)
 	if err != nil {
-		return fmt.Errorf("error making HEAD request: %w", err)
-	}
-	err = res.Body.Close()
-	if err != nil {
-		return fmt.Errorf("error closing response body: %w", err)
+		return fmt.Errorf("error finding metadata: %w", err)
 	}
 
-	if !supportsRangeRequests(res) {
+	if !meta.SupportsRangeRequests {
 		return errors.New("server does not support range requests")
 	}
 
-	contentLength := res.ContentLength
-
-	filename := filename(url)
-
 	if verbose {
-		log.Printf("Downloading %s (%d bytes) in %d chunks\n", filename, contentLength, numChunks)
+		log.Printf("Downloading %s (%d bytes) in %d chunks\n", meta.Filename, meta.ContentLength, numChunks)
 	}
 
-	err = createFile(filename)
+	err = createFile(meta.Filename)
 	if err != nil {
 		return err
 	}
 
 	wg := sync.WaitGroup{}
 
-	for i, chunk := range chunks.Build(url, contentLength, numChunks, filename) {
+	for i, chunk := range chunks.Build(url, meta.ContentLength, numChunks, meta.Filename) {
 		wg.Add(1)
 		go func(index int, chunk chunks.Chunk) {
 			defer wg.Done()
@@ -64,7 +56,7 @@ func Run(url string, numChunks int, verbose bool) error {
 	duration := time.Since(startTime).Seconds()
 
 	if verbose {
-		log.Printf("Finished in %f seconds. Average speed: %f MB/s\n", duration, float64(contentLength/1000000)/duration)
+		log.Printf("Finished in %f seconds. Average speed: %f MB/s\n", duration, float64(meta.ContentLength/1000000)/duration)
 	}
 
 	return nil
@@ -82,14 +74,4 @@ func createFile(filename string) error {
 	}
 
 	return nil
-}
-
-func supportsRangeRequests(res *http.Response) bool {
-	acceptRanges := res.Header.Get("Accept-Ranges")
-	return strings.Contains(acceptRanges, "bytes")
-}
-
-func filename(url string) string {
-	segments := strings.Split(url, "/")
-	return segments[len(segments)-1]
 }
