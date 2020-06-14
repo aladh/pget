@@ -36,18 +36,14 @@ func Run(url string, numChunks int, verbose bool) error {
 		log.Printf("Downloading %s (%d bytes) in %d chunks\n", filename, contentLength, numChunks)
 	}
 
-	out, err := os.Create(filename)
+	err = createFile(filename)
 	if err != nil {
-		return fmt.Errorf("error creating file: %w", err)
-	}
-	err = out.Close()
-	if err != nil {
-		return fmt.Errorf("error closing file: %w", err)
+		return err
 	}
 
 	wg := sync.WaitGroup{}
 
-	for i, chunk := range chunks.Build(url, contentLength, numChunks, out.Name()) {
+	for i, chunk := range chunks.Build(url, contentLength, numChunks, filename) {
 		wg.Add(1)
 		go func(index int, chunk chunks.Chunk) {
 			defer wg.Done()
@@ -69,6 +65,20 @@ func Run(url string, numChunks int, verbose bool) error {
 
 	if verbose {
 		log.Printf("Finished in %f seconds. Average speed: %f MB/s\n", duration, float64(contentLength/1000000)/duration)
+	}
+
+	return nil
+}
+
+func createFile(filename string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("error creating file: %w", err)
+	}
+
+	err = file.Close()
+	if err != nil {
+		return fmt.Errorf("error closing file: %w", err)
 	}
 
 	return nil
