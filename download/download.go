@@ -52,7 +52,7 @@ func (d *Download) Run() error {
 		return err
 	}
 
-	d.spawnWorkers(meta.ContentLength)
+	d.downloadChunks(meta.ContentLength)
 	d.waitGroup.Wait()
 
 	duration := time.Since(startTime).Seconds()
@@ -64,7 +64,7 @@ func (d *Download) Run() error {
 	return nil
 }
 
-func (d *Download) spawnWorkers(contentLength int64) {
+func (d *Download) downloadChunks(contentLength int64) {
 	for i, chunk := range chunks.Build(d.url, contentLength, d.numChunks, d.filename) {
 		d.waitGroup.Add(1)
 
