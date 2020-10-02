@@ -2,7 +2,7 @@
   <h3 align="center">pget</h3>
 
   <p align="center">
-    Command-line utility to downloads a file in parallel
+    Command-line utility to download a file in parallel
 </p>
 
 ## About The Project
