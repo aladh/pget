@@ -11,18 +11,18 @@ lint:
 
 binary:
   stage: build
-  image: golang:1.16-buster
+  image: golang:1.18-buster
   script: go build
 
 end-to-end:
   stage: verify
-  image: golang:1.16-buster
+  image: golang:1.18-buster
   script:
     - go test main*.go
 
 benchmark:
   stage: verify
-  image: golang:1.16-buster
+  image: golang:1.18-buster
   script:
     - go test ./... -run=Bench -bench=. -benchtime=10x -timeout 0
   when: manual
