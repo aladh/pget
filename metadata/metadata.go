@@ -12,22 +12,23 @@ type Metadata struct {
 }
 
 func Fetch(url string) (*Metadata, error) {
-	res, err := http.Head(url)
+	resp, err := http.Head(url)
 	if err != nil {
 		return nil, fmt.Errorf("error making HEAD request: %w", err)
 	}
-	err = res.Body.Close()
-	if err != nil {
-		return nil, fmt.Errorf("error closing response body: %w", err)
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("received bad response code %d", resp.StatusCode)
 	}
 
 	return &Metadata{
-		ContentLength:         res.ContentLength,
-		SupportsRangeRequests: supportsRangeRequests(res),
+		ContentLength:         resp.ContentLength,
+		SupportsRangeRequests: supportsRangeRequests(resp),
 	}, nil
 }
 
-func supportsRangeRequests(res *http.Response) bool {
-	acceptRanges := res.Header.Get("Accept-Ranges")
+func supportsRangeRequests(resp *http.Response) bool {
+	acceptRanges := resp.Header.Get("Accept-Ranges")
 	return strings.Contains(acceptRanges, "bytes")
 }
