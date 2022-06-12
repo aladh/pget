@@ -1,18 +1,18 @@
 stages:
-  - test
   - build
+  - test
   - verify
+
+binary:
+  stage: build
+  image: golang:1.18-buster
+  script: go build
 
 lint:
   stage: test
   image: golangci/golangci-lint:v1.37
   script:
     - golangci-lint run -v -E golint -E gofmt -E goconst -E interfacer -E gocritic -E gocognit -E gocyclo
-
-binary:
-  stage: build
-  image: golang:1.18-buster
-  script: go build
 
 end-to-end:
   stage: verify
