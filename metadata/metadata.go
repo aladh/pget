@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/aladh/pget/config"
 )
 
 type Metadata struct {
@@ -12,9 +14,16 @@ type Metadata struct {
 }
 
 func Fetch(url string) (*Metadata, error) {
-	resp, err := http.Head(url)
+	req, err := http.NewRequest("HEAD", url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error making HEAD request: %w", err)
+		return nil, fmt.Errorf("error creating HEAD request: %w", err)
+	}
+
+	req.Header.Add("User-Agent", config.UserAgent)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error performing HEAD request: %w", err)
 	}
 	defer resp.Body.Close()
 

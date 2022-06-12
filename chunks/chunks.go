@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/aladh/pget/config"
 )
 
 type Chunk struct {
@@ -46,6 +48,7 @@ func (chunk *Chunk) Download() (err error) {
 	}
 
 	req.Header.Add("Range", fmt.Sprintf("bytes=%d-%d", chunk.start, chunk.end))
+	req.Header.Add("User-Agent", config.UserAgent)
 
 	client := http.Client{}
 	res, err := client.Do(req)
