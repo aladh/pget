@@ -1,3 +1,3 @@
-module github.com/ali-l/pget
+module github.com/aladh/pget
 
 go 1.18

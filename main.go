@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
-	"github.com/ali-l/pget/download"
 	"log"
+
+	"github.com/aladh/pget/download"
 )
 
 func main() {

@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ali-l/pget/chunks"
-	"github.com/ali-l/pget/metadata"
+	"github.com/aladh/pget/chunks"
+	"github.com/aladh/pget/metadata"
 )
 
 type Download struct {
