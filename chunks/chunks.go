@@ -50,8 +50,7 @@ func (chunk *Chunk) Download() (err error) {
 	req.Header.Add("Range", fmt.Sprintf("bytes=%d-%d", chunk.start, chunk.end))
 	req.Header.Add("User-Agent", config.UserAgent)
 
-	client := http.Client{}
-	res, err := client.Do(req)
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("error performing range request: %w", err)
 	}
