@@ -1,3 +1,3 @@
 module github.com/aladh/pget
 
-go 1.18
+go 1.24

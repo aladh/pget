@@ -5,7 +5,7 @@ stages:
 
 binary:
   stage: build
-  image: golang:1.18-buster
+  image: golang:1.24-bookworm
   script: go build
 
 lint:
@@ -16,13 +16,13 @@ lint:
 
 end-to-end:
   stage: verify
-  image: golang:1.18-buster
+  image: golang:1.24-bookworm
   script:
     - go test main*.go
 
 benchmark:
   stage: verify
-  image: golang:1.18-buster
+  image: golang:1.24-bookworm
   script:
     - go test ./... -run=Bench -bench=. -benchtime=10x -timeout 0
   when: manual
